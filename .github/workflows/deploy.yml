@@ -30,7 +30,6 @@ jobs:
           cache: 'npm'
       - name: Install dependencies and build
         run: |
-          cd blood-management-system-main/bloodtrack-react
           npm install
           npm run build
       - name: Setup Pages
@@ -38,7 +37,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './blood-management-system-main/bloodtrack-react/dist'
+          path: './dist'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

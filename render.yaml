@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: bloodtrack-react-client
-    env: static
-    buildCommand: npm install && cd blood-management-system-main/bloodtrack-react && npm install && npm run build
-    staticPublishPath: ./blood-management-system-main/bloodtrack-react/dist
-    autoDeploy: true
