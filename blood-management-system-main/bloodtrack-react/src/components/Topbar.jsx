@@ -36,12 +36,12 @@ export default function Topbar({ activePage, onNavigate, onNotif }) {
       </nav>
 
       <div className="topbar-actions">
-        <button className="icon-btn" onClick={onNotif} title="Notifications">
+        <button className="icon-btn" onClick={() => onNavigate('notifications')} title="Notifications">
           🔔 <span className="notif-dot" />
         </button>
-        <button className="icon-btn" title="Settings">⚙</button>
+        <button className="icon-btn" onClick={() => onNavigate('settings')} title="Settings">⚙</button>
         <button className="icon-btn" title="Help">?</button>
-        <div className="topbar-user">
+        <div className="topbar-user" onClick={() => onNavigate('profile')} style={{ cursor: 'pointer' }}>
           <div>
             <div className="user-name">Dr. Arjun Varma</div>
             <div className="user-role">CHIEF ADMINISTRATOR</div>

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS, CategoryScale, LinearScale,
@@ -23,14 +24,32 @@ const chartOpts = {
   }
 };
 
-const nodes = [
+const initialNodes = [
   { id:'Sensor-N12', loc:'MAIN REFRIGERATOR A', temp:'3.4°C', status:'green' },
   { id:'Sensor-T88', loc:'CRYO-VAULT 04',       temp:'0.1°C', status:'red'   },
   { id:'Sensor-P41', loc:'PLASMA UNIT RACK',    temp:'4.0°C', status:'green' },
-  { id:'OFFLINE-X09',loc:'BACKUP UNIT 2',        temp:'N/A',   status:'gray'  },
+  { id:'OFFLINE-X09',loc:'BACKUP UNIT 2',        temp:'N/A',   status:'gray', inactive:true },
 ];
 
 export default function ColdChainIoT() {
+  const [nodes, setNodes] = useState(initialNodes);
+  const [trackingNode, setTrackingNode] = useState(null);
+
+  const toggleNodeStatus = (id) => {
+    setNodes(prev => prev.map(n => {
+      if (n.id === id) {
+        if (n.inactive) {
+          // Reactivate
+          return { ...n, inactive: false, status: 'green', temp: '3.2°C' };
+        } else {
+          // Deactivate
+          return { ...n, inactive: true, status: 'gray', temp: 'N/A' };
+        }
+      }
+      return n;
+    }));
+  };
+
   return (
     <div className="page-enter">
       {/* Stat cards */}
@@ -38,7 +57,7 @@ export default function ColdChainIoT() {
         <div className="card iot-card">
           <div className="iot-icon-badge iot-blue">📡</div>
           <div className="iot-lbl">ACTIVE SENSORS</div>
-          <div className="iot-val">1,248</div>
+          <div className="iot-val">{nodes.filter(n => !n.inactive).length + 1244}</div>
           <div className="iot-sub"><span className="live-dot"/>99.8% Operational Uptime</div>
         </div>
         <div className="card iot-card">
@@ -50,7 +69,7 @@ export default function ColdChainIoT() {
         <div className="card iot-card">
           <div className="iot-icon-badge iot-red">⚠</div>
           <div className="iot-lbl">CRITICAL ALERTS</div>
-          <div className="iot-val" style={{color:'var(--red)'}}>03</div>
+          <div className="iot-val" style={{color:'var(--red)'}}>{nodes.filter(n => n.status === 'red').length + 2}</div>
           <div className="iot-sub"><span className="live-dot live-dot-red"/>Action Required: Transit Hub 4</div>
         </div>
       </div>
@@ -71,36 +90,51 @@ export default function ColdChainIoT() {
           <div style={{height:220}}><Line data={chartData} options={chartOpts}/></div>
         </div>
 
-        <div className="card iot-nodes-card">
+        <div className="card iot-nodes-card" style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="card-title" style={{marginBottom:4}}>IoT Node Health</div>
           <div className="node-sub">LIVE DEVICE REGISTRY</div>
-          <div className="node-list">
+          <div className="node-list" style={{ overflowY: 'auto', flex: 1 }}>
             {nodes.map(n=>(
-              <div key={n.id} className={`node-item${n.status==='gray'?' node-offline':''}`}>
-                <span className={`node-ind ind-${n.status}`}/>
-                <div className="node-info">
-                  <span className="node-name">{n.id}</span>
-                  <span className="node-loc">{n.loc}</span>
+              <div key={n.id} className={`node-item${n.inactive?' node-offline':''}`} style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span className={`node-ind ind-${n.status}`}/>
+                    <div className="node-info">
+                      <span className="node-name">{n.id}</span>
+                      <span className="node-loc">{n.loc}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span className={`node-temp${n.status==='red'?' temp-red':n.status==='gray'?' temp-gray':''}`}>{n.temp}</span>
+                    <span className="node-icons">🔋📶</span>
+                  </div>
                 </div>
-                <span className={`node-temp${n.status==='red'?' temp-red':n.status==='gray'?' temp-gray':''}`}>{n.temp}</span>
-                <span className="node-icons">🔋📶</span>
+                {/* Control Actions Row */}
+                <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                  <button className="btn btn-outline" style={{ flex: 1, padding: '4px', fontSize: 10 }} onClick={() => toggleNodeStatus(n.id)}>
+                    {n.inactive ? 'POWER ON' : 'DEACTIVATE'}
+                  </button>
+                  <button className="btn btn-outline" style={{ flex: 1, padding: '4px', fontSize: 10, borderColor: trackingNode === n.id ? 'var(--blue)' : '' }} onClick={() => setTrackingNode(trackingNode === n.id ? null : n.id)}>
+                    {trackingNode === n.id ? 'TRACKING...' : 'TRACK ON MAP'}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
-          <button className="diag-btn">DIAGNOSTICS REPORT</button>
+          <button className="diag-btn" style={{ marginTop: 12 }}>DIAGNOSTICS REPORT</button>
 
           {/* Radar */}
-          <div className="radar-wrap">
+          <div className="radar-wrap" style={{ display: trackingNode ? 'block' : 'none', marginTop: 16 }}>
             <div className="radar-hdr">
               <span className="radar-lbl">LIVE RADAR</span>
-              <span className="radar-scan"><span className="live-dot"/>SCANNING</span>
+              <span className="radar-scan"><span className="live-dot"/>SCANNING: {trackingNode}</span>
             </div>
             <div className="radar-disc">
               <div className="r-circle r-c1"/><div className="r-circle r-c2"/><div className="r-circle r-c3"/>
               <div className="r-sweep"/>
               <div className="r-center"/>
             </div>
-            <div className="radar-foot">LOCATING LOGISTICS 04-B</div>
+            <div className="radar-foot" style={{ color: 'var(--blue)' }}>LOCATING IoT UNIT PROTOCOL...</div>
           </div>
         </div>
       </div>

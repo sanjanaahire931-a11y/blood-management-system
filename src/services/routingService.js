@@ -4,23 +4,32 @@
  * Currently using mock mode (Option B). Swap for Google Maps API when ready.
  */
 
+const { planDelivery } = require('../../logistics_engine');
+
 /**
  * Get routing information from one location to another.
  * @param {object} fromLocation - { lat, lng }
  * @param {object} toLocation   - { lat, lng }
- * @returns {object} { distance, eta, path }
+ * @param {string} urgencyLevel - e.g., 'high', 'medium', 'low'
+ * @returns {object} { distance, eta, path, deliveryMode }
  */
-async function getRoute(fromLocation, toLocation) {
-  // Option B: Mock response
-  // To enable Google Maps: set GOOGLE_MAPS_API_KEY in .env and
-  // call https://maps.googleapis.com/maps/api/distancematrix/json
-  const distanceKm = haversineDistanceKm(fromLocation, toLocation).toFixed(1);
-  const etaMinutes = Math.round(distanceKm / 0.4); // ~24 km/h city speed estimate
+async function getRoute(fromLocation, toLocation, urgencyLevel = 'medium') {
+  const distanceKm = haversineDistanceKm(fromLocation, toLocation);
+  
+  // Use logistics engine to plan mode & exact ETA
+  const plan = planDelivery({
+    source: `${fromLocation.lat},${fromLocation.lng}`,
+    destination: `${toLocation.lat},${toLocation.lng}`,
+    distance: distanceKm,
+    urgencyLevel: urgencyLevel,
+    emergency: urgencyLevel === 'high'
+  });
 
   return {
-    distance: `${distanceKm} km`,
-    eta: `${etaMinutes} mins`,
-    path: [fromLocation, toLocation],
+    distance: `${distanceKm.toFixed(1)} km`,
+    eta: `${plan.etaMinutes} mins`,
+    path: plan.selectedRoute,
+    deliveryMode: plan.deliveryMode
   };
 }
 

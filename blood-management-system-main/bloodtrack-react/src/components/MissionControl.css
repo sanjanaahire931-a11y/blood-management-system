@@ -15,13 +15,26 @@
 
 .map-alerts-row { display:grid; grid-template-columns:1fr 310px; gap:14px; margin-bottom:20px; }
 .map-card .card-title { font-size:11px; }
-.india-map-wrap { background:rgba(255,255,255,.02); border-radius:10px; height:300px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-.india-svg { width:100%; height:100%; max-height:300px; }
-.india-path { fill:#2a3347; stroke:#3d4d6a; stroke-width:1.5; }
-.map-label { fill:#6b7a99; font-size:9px; font-family:'Inter',sans-serif; }
-@keyframes pulse { 0%{r:14;opacity:1} 100%{r:26;opacity:0} }
-.pulse-ring { animation:pulse 2s infinite; }
+/* Leaflet Map Overrides */
+.leaflet-container { font-family: 'Inter', sans-serif !important; background: #0a0d14 !important; border-radius: 10px; z-index: 1;}
+.leaflet-tooltip {
+  background: rgba(22, 27, 39, 0.85) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-accent) !important;
+  backdrop-filter: blur(8px);
+  border-radius: 6px;
+  font-size: 11px;
+}
+.leaflet-tooltip::before { border-top-color: var(--border-accent) !important; }
 
+/* Pulsing Line Animation */
+.pulsing-line {
+  animation: dashCycle 60s linear infinite;
+}
+
+@keyframes dashCycle {
+  to { stroke-dashoffset: -1000; }
+}
 .alerts-card .card-title { font-size:11px; }
 .alerts-list { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
 .alert-item { padding:9px 11px; border-radius:8px; border-left:3px solid transparent; background:rgba(255,255,255,.03); }

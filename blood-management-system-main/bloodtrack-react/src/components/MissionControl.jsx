@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS, CategoryScale, LinearScale,
@@ -38,15 +38,98 @@ const invData = {
   }]
 };
 
-export default function MissionControl() {
+export default function MissionControl({ isEmergency }) {
+  const [alerts, setAlerts] = useState([]);
+  const [totalUnits, setTotalUnits] = useState(0);
+  const [mapFilter, setMapFilter] = useState('ALL');
+  
+  // Real-time calculated states
+  const [hospitalsOnline, setHospitalsOnline] = useState({});
+  const [invData, setInvData] = useState({
+    labels: ['A+','A–','B+','B–','O–','O+','AB+','AB-'],
+    datasets:[{ data: [0,0,0,0,0,0,0,0], backgroundColor: 'rgba(59,130,246,.7)', borderRadius: 4 }]
+  });
+  
+  const [demandData, setDemandData] = useState({
+    labels: ['08:00','10:00','12:00','14:00','16:00','18:00','20:00'],
+    datasets: [
+      { label:'Supply', data:[0,0,0,0,0,0,0], borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.06)', borderWidth:2, tension:.4, fill:true, pointRadius:0 },
+      { label:'Demand', data:[0,0,0,0,0,0,0], borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,.04)', borderWidth:2, tension:.4, fill:true, pointRadius:0, borderDash:[4,4] }
+    ]
+  });
+
+  useEffect(() => {
+    // 1. Fetch Alerts
+    fetch('http://localhost:5000/api/alerts')
+      .then(res => res.json())
+      .then(res => {
+        if (res.alerts && res.alerts.length > 0) {
+          setAlerts(res.alerts.map(a => ({ type: a.type === 'EMERGENCY' ? 'critical' : 'system', time: 'JUST NOW', title: a.title || a.type, text: a.message })));
+        } else {
+          setAlerts([{ type:'system', time:'JUST NOW', title:'SYSTEM ONLINE', text:'All facilities reporting normal parameters.' }]);
+        }
+      }).catch(console.error);
+
+    // 2. Fetch Inventory and Compute Distribution
+    fetch('http://localhost:5000/api/inventory')
+      .then(r => r.json())
+      .then(r => {
+        if (r.units) {
+          setTotalUnits(r.units.length * 5); // Dummy multiplier for demo scale if few items
+          
+          const types = ['A+','A-','B+','B-','O-','O+','AB+','AB-'];
+          const counts = Array(8).fill(0);
+          r.units.forEach(u => {
+            let idx = types.indexOf(u.bloodType);
+            if (idx === -1 && u.bloodType === 'A–') idx = 1; // Handing '–' vs '-' char issues
+            else if (idx === -1 && u.bloodType === 'B–') idx = 3;
+            else if (idx === -1 && u.bloodType === 'O–') idx = 4;
+            if (idx > -1) counts[idx] += parseInt(u.quantity || 1);
+          });
+          
+          setInvData(prev => {
+            const next = {...prev};
+            next.datasets[0].data = counts;
+            // Generate vibrant colors per grouping
+            next.datasets[0].backgroundColor = counts.map((_, i) => ['rgba(59,130,246,.7)','rgba(59,130,246,.5)','rgba(6,182,212,.7)','rgba(6,182,212,.5)','rgba(239,68,68,.8)','rgba(34,197,94,.7)','rgba(168,85,247,.7)','rgba(168,85,247,.5)'][i]);
+            return next;
+          });
+          
+          // Compute Mock Time-Series based on total volume (simulating real-time curve)
+          const baseVol = r.units.length * 2;
+          setDemandData(prev => {
+            const next = {...prev};
+            next.datasets[0].data = hours.map((_,i) => baseVol + Math.sin(i)*15 + Math.random()*20); // Supply
+            next.datasets[1].data = hours.map((_,i) => baseVol + Math.cos(i)*20 + Math.random()*25); // Demand
+            return next;
+          });
+        }
+      }).catch(console.error);
+      
+    // 3. Fetch Precise Hospitals Database
+    fetch('http://localhost:5000/api/hospitals')
+      .then(r => r.json())
+      .then(r => {
+        if (r.hospitals && r.hospitals.length > 0) {
+          const hopsMap = {};
+          r.hospitals.forEach(h => {
+             // Assuming location array [lat, lng] is sent
+             hopsMap[h._id || h.name] = { pos: h.location, name: h.name };
+          });
+          setHospitalsOnline(hopsMap);
+        }
+      }).catch(console.error);
+
+  }, []);
+
   return (
     <div className="page-enter">
       {/* Stat Cards */}
       <div className="stat-grid">
-        <StatCard accent="blue"  label="TOTAL UNITS AVAILABLE"  value="14,208" sub={<span className="badge badge-green">▲12%</span>} />
-        <StatCard accent="muted" label="ACTIVE REQUESTS"        value="342"   sub={<span className="stat-sub-text">Standard Processing</span>} />
-        <StatCard accent="red"   label="EMERGENCY REQUESTS"     value="18"    sub={<span className="stat-sub-text">📡 Priority</span>} />
-        <StatCard accent="amber" label="UNITS NEAR EXPIRY"      value="84"    sub={<span className="badge badge-amber">&lt; 48 HOURS</span>} />
+        <StatCard accent="blue"  label="TOTAL UNITS AVAILABLE"  value={totalUnits} sub={<span className="badge badge-green">LIVE</span>} />
+        <StatCard accent="muted" label="ACTIVE REQUESTS"        value={Math.round(totalUnits * 0.15)}   sub={<span className="stat-sub-text">Standard Processing</span>} />
+        <StatCard accent="red"   label="EMERGENCY REQUESTS"     value={isEmergency ? (alerts.length > 1 ? alerts.length + 1 : 4) : (alerts.length > 1 ? alerts.length : 3)} sub={<span className="stat-sub-text">📡 Priority</span>} />
+        <StatCard accent="amber" label="UNITS NEAR EXPIRY"      value={Math.round(totalUnits * 0.08)}    sub={<span className="badge badge-amber">&lt; 48 HOURS</span>} />
       </div>
 
       {/* Map + Alerts */}
@@ -54,22 +137,26 @@ export default function MissionControl() {
         <div className="card map-card">
           <div className="card-header">
             <span className="card-title">LIVE DEPLOYMENT MAP – INDIA</span>
-            <div style={{display:'flex',gap:6}}>
-              <span className="badge badge-blue">LIVE TELEMETRY</span>
-              <span className="badge badge-outline">24 REGIONS</span>
+            <div style={{display:'flex',gap:6, alignItems: 'center'}}>
+              <select className="input-select" value={mapFilter} onChange={(e) => setMapFilter(e.target.value)} style={{padding: '4px 22px 4px 8px', fontSize: '10px'}}>
+                <option value="ALL">Show All Facilities</option>
+                <option value="ACTIVE">Active Transports Only</option>
+                <option value="IOT_NODES">Show IoT Sensor Mesh</option>
+              </select>
+              <span className={`badge ${isEmergency ? 'badge-red' : 'badge-blue'}`}>{isEmergency ? 'CRITICAL TELEMETRY' : 'LIVE TELEMETRY'}</span>
             </div>
           </div>
-          <IndiaMap />
+          <IndiaMap mapFilter={mapFilter} dynamicHospitals={hospitalsOnline} isEmergency={isEmergency} />
         </div>
         <div className="card alerts-card">
           <div className="card-header">
             <span className="card-title">⚡ REAL-TIME ALERTS</span>
           </div>
           <div className="alerts-list">
-            <AlertItem type="critical"  time="2M AGO"  title="CRITICAL SHORTAGE" text="O– Negative needed at Apollo Hospital, Bangalore. Request priority: Level 1." />
-            <AlertItem type="dispatch"  time="12M AGO" title="DISPATCH TRANSIT"  text="Convoy BT-092 departed Mumbai Hub. ETA Pune Facility: 14:30 IST." />
-            <AlertItem type="system"    time="45M AGO" title="SYSTEM UPDATE"     text="Cold chain IoT sensors online in Hyderabad Zone. Precision monitoring active." />
-            <AlertItem type="weather"   time="1H AGO"  title="WEATHER ALERT"    text="Heavy rain in Chennai area. Rerouting emergency logistics through Route B." />
+            {isEmergency && <AlertItem type="critical" time="JUST NOW" title="URGENT REDISTRIBUTION" text="Vehicles BT-104 and PRE-02 active. Bypassing standard protocols." />}
+            {alerts.length ? alerts.map((a, i) => (
+              <AlertItem key={i} type={a.type} time={a.time} title={a.title} text={a.text} />
+            )) : <div style={{color:'var(--text-secondary)', fontSize:13}}>No active alerts. Systems normal.</div>}
           </div>
           <button className="view-logs-btn">VIEW HISTORICAL LOGS</button>
         </div>
@@ -119,25 +206,94 @@ function AlertItem({ type, time, title, text }) {
   );
 }
 
-function IndiaMap() {
+import { MapContainer, TileLayer, CircleMarker, Polyline, Tooltip as LeafletTooltip } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+const defaultHospitals = {
+  Delhi: { pos: [28.6139, 77.2090], name: 'AIIMS New Delhi' },
+  Mumbai: { pos: [19.0760, 72.8777], name: 'Mumbai Hub' },
+  Chennai: { pos: [13.0827, 80.2707], name: 'Chennai Regional' },
+  Bangalore: { pos: [12.9716, 77.5946], name: 'Apollo Bangalore' },
+  Pune: { pos: [18.5204, 73.8567], name: 'Pune Facility' },
+  Kolkata: { pos: [22.5726, 88.3639], name: 'Kolkata Medical College' },
+  Hyderabad: { pos: [17.3850, 78.4867], name: 'Osmania Hospital' },
+  Ahmedabad: { pos: [23.0225, 72.5714], name: 'Civil Hospital' }
+};
+
+const defaultConvoys = [
+  { path: [defaultHospitals.Mumbai.pos, defaultHospitals.Pune.pos], color: '#3b82f6', label: 'BT-092' }
+];
+
+// Generate 24 Mock IoT Nodes
+const mockIoTNodes = Array.from({length: 24}).map((_, i) => ({
+  id: `IOT-${i + 100}`,
+  pos: [20 + Math.random() * 8, 72 + Math.random() * 10]
+}));
+
+const IndiaMap = React.memo(function IndiaMap({ mapFilter, dynamicHospitals = {}, isEmergency }) {
+  const mergedHospitals = { ...defaultHospitals, ...dynamicHospitals };
+  
+  const activeConvoys = [...defaultConvoys];
+  if (isEmergency) {
+    activeConvoys.push({ path: [mergedHospitals.Delhi?.pos || defaultHospitals.Delhi.pos, mergedHospitals.Bangalore?.pos || defaultHospitals.Bangalore.pos], color: '#ff3b30', label: 'CRITICAL OVERRIDE BT-104' });
+    activeConvoys.push({ path: [mergedHospitals.Mumbai?.pos || defaultHospitals.Mumbai.pos, mergedHospitals.Chennai?.pos || defaultHospitals.Chennai.pos], color: '#ff3b30', label: 'PRIORITY AIR-EVAC' });
+  }
+
+  const displayingNodes = mapFilter === 'ACTIVE'
+    ? Object.entries(mergedHospitals).filter(([_, loc]) => 
+        activeConvoys.some(c => c.path.some(p => p[0] === loc.pos[0] && p[1] === loc.pos[1]))
+      )
+    : Object.entries(mergedHospitals);
+
   return (
-    <div className="india-map-wrap">
-      <svg viewBox="0 0 500 560" className="india-svg">
-        <path className="india-path" d="M200,20 L230,18 L260,22 L280,35 L295,50 L310,65 L330,70 L350,60 L370,55 L385,45 L395,55 L400,70 L395,90 L380,105 L370,120 L365,140 L370,160 L380,175 L390,190 L395,210 L390,230 L380,245 L375,265 L380,285 L385,305 L380,325 L370,340 L360,358 L345,375 L330,390 L315,400 L305,415 L295,430 L285,445 L275,460 L265,475 L255,490 L245,505 L235,520 L230,535 L220,540 L215,530 L210,515 L205,500 L200,485 L195,470 L190,455 L195,440 L200,425 L205,410 L200,395 L190,380 L180,365 L170,350 L160,335 L155,318 L150,300 L145,282 L140,265 L135,248 L130,230 L135,212 L140,195 L135,178 L128,160 L125,142 L120,125 L115,108 L110,90 L108,72 L115,56 L125,42 L140,32 L158,25 L178,21 Z"/>
-        <path className="india-path" d="M200,20 L190,15 L178,10 L165,8 L152,12 L142,20 L135,30 L140,32 Z"/>
-        <path className="india-path" d="M395,55 L410,50 L425,52 L435,60 L440,75 L430,85 L415,88 L400,82 L395,70 Z"/>
-        <ellipse cx="430" cy="380" rx="8" ry="20" className="india-path" opacity=".5"/>
-        {/* pulse marker - Delhi */}
-        <circle cx="250" cy="180" r="14" fill="none" stroke="#ef4444" strokeWidth="1" className="pulse-ring"/>
-        <circle cx="250" cy="180" r="5" fill="#ef4444"/>
-        {/* Mumbai */}
-        <circle cx="210" cy="390" r="5" fill="#3b82f6"/>
-        {/* Chennai */}
-        <circle cx="310" cy="460" r="5" fill="#f59e0b"/>
-        <text x="238" y="168" className="map-label">Delhi</text>
-        <text x="193" y="410" className="map-label">Mumbai</text>
-        <text x="296" y="475" className="map-label">Chennai</text>
-      </svg>
+    <div style={{ height: '320px', width: '100%', borderRadius: '12px', overflow: 'hidden', border: isEmergency ? '1px solid var(--red)' : '1px solid rgba(255,255,255,0.08)' }}>
+      <MapContainer 
+        center={[22.5937, 78.9629]} 
+        zoom={4} 
+        style={{ height: '100%', width: '100%', background: '#0a0d14' }}
+        zoomControl={false}
+        preferCanvas={true}
+      >
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://carto.com/">CartoDB</a>'
+        />
+
+        {mapFilter !== 'IOT_NODES' && displayingNodes.map(([key, loc]) => (
+          <CircleMarker 
+            key={key} 
+            center={loc.pos} 
+            radius={mapFilter === 'ACTIVE' ? 6 : 4} 
+            pathOptions={{ color: '#007aff', fillColor: '#007aff', fillOpacity: 0.8, weight: 1 }}
+          >
+            <LeafletTooltip direction="top" offset={[0, -10]} opacity={1}>
+              <span style={{color: '#1a2235', fontWeight: 600}}>{loc.name}</span>
+            </LeafletTooltip>
+          </CircleMarker>
+        ))}
+
+        {mapFilter === 'IOT_NODES' && mockIoTNodes.map((node) => (
+          <CircleMarker 
+            key={node.id} 
+            center={node.pos} 
+            radius={3} 
+            pathOptions={{ color: '#06b6d4', fillColor: '#06b6d4', fillOpacity: 1, weight: 2, className: 'pulsing-line' }}
+          >
+            <LeafletTooltip direction="top" opacity={0.9}>{node.id} - ACTIVE</LeafletTooltip>
+          </CircleMarker>
+        ))}
+
+        {mapFilter !== 'IOT_NODES' && activeConvoys.map((convoy, idx) => (
+          <Polyline 
+            key={idx} 
+            positions={convoy.path} 
+            pathOptions={{ color: convoy.color, weight: isEmergency ? 4 : 3, dashArray: '5, 8', className: 'pulsing-line' }} 
+          >
+             <LeafletTooltip sticky opacity={0.9} permanent={isEmergency && idx > 0}>{convoy.label} - LIVE TRANSIT</LeafletTooltip>
+          </Polyline>
+        ))}
+      </MapContainer>
     </div>
   );
-}
+});
