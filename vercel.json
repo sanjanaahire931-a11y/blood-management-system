@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd blood-management-system-main/bloodtrack-react && npm run build",
+  "outputDirectory": "blood-management-system-main/bloodtrack-react/dist",
+  "framework": "vite"
+}

@@ -1,0 +1,24 @@
+{
+  "name": "bloodtrack-india-ultra",
+  "version": "1.0.0",
+  "description": "BloodTrack India Ultra — Intelligent Blood Management Backend",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "seed": "node src/seeders/seedHospitals.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "joi": "^17.13.1",
+    "mongoose": "^8.4.0",
+    "node-cron": "^3.0.3",
+    "socket.io": "^4.7.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
