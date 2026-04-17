@@ -29,6 +29,7 @@ const bloodRequestRoutes = require('./routes/bloodRequest');
 const inventoryRoutes = require('./routes/inventory');
 const donorRoutes = require('./routes/donor');
 const adminRoutes = require('./routes/admin');
+const hospitalRoutes = require('./routes/hospitals');
 
 // ── App & HTTP Server ────────────────────────────────────────────────────────
 const app = express();
@@ -52,6 +53,7 @@ app.use('/api/request-blood', bloodRequestRoutes);
 app.use('/api', inventoryRoutes);               // /api/add-blood, /api/inventory
 app.use('/api/register-donor', donorRoutes);
 app.use('/api/admin', adminRoutes);             // /api/admin/stats, /api/admin/donors
+app.use('/api/hospitals', hospitalRoutes);      // /api/hospitals (CSV-seeded)
 // GET /api/alerts — inline handler (avoids coupling to bloodRequest router)
 app.get('/api/alerts', async (req, res, next) => {
   try {
