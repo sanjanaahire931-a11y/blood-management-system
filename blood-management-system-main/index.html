@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BloodTrack India – Mission Control Ultra</title>
+  <meta name="description" content="BloodTrack India – Real-time blood supply chain management and telemetry platform for the Indian healthcare network." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-mark">🩸</span>
+    <div>
+      <div class="logo-title">BloodTrack India</div>
+      <div class="logo-sub">MISSION CONTROL ULTRA</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="#mission-control" class="nav-item active" data-page="mission-control" id="nav-mission-control">
+      <span class="nav-icon">⊞</span>
+      <span class="nav-label">MISSION CONTROL</span>
+      <span class="nav-indicator"></span>
+    </a>
+    <a href="#blood-inventory" class="nav-item" data-page="blood-inventory" id="nav-blood-inventory">
+      <span class="nav-icon">🩸</span>
+      <span class="nav-label">BLOOD INVENTORY</span>
+    </a>
+    <a href="#logistics-track" class="nav-item" data-page="logistics-track" id="nav-logistics-track">
+      <span class="nav-icon">🚚</span>
+      <span class="nav-label">LOGISTICS TRACK</span>
+    </a>
+    <a href="#hospital-network" class="nav-item" data-page="hospital-network" id="nav-hospital-network">
+      <span class="nav-icon">🏥</span>
+      <span class="nav-label">HOSPITAL NETWORK</span>
+    </a>
+    <a href="#cold-chain-iot" class="nav-item" data-page="cold-chain-iot" id="nav-cold-chain-iot">
+      <span class="nav-icon">❄</span>
+      <span class="nav-label">COLD CHAIN IoT</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="emergency-dispatch-btn" id="emergencyBtn" onclick="triggerEmergency()">
+      ✳ Emergency Dispatch
+    </button>
+    <div class="admin-profile">
+      <div class="admin-avatar">👤</div>
+      <div class="admin-info">
+        <div class="admin-name">Chief Admin</div>
+        <div class="admin-role">VERIFIED NODE 01</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ===== TOP NAVBAR ===== -->
+<header class="topbar">
+  <div class="topbar-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="globalSearch" placeholder="Global system search..." class="search-input" />
+  </div>
+  <nav class="topbar-nav">
+    <a class="topbar-link active" data-view="global" onclick="switchView('global',this)">Global View</a>
+    <a class="topbar-link" data-view="analytics" onclick="switchView('analytics',this)">Analytics</a>
+    <a class="topbar-link" data-view="system-health" onclick="switchView('system-health',this)">System Health</a>
+  </nav>
+  <div class="topbar-actions">
+    <button class="topbar-icon-btn" title="Notifications" onclick="showNotif()">
+      🔔
+      <span class="notif-dot"></span>
+    </button>
+    <button class="topbar-icon-btn" title="Settings">⚙</button>
+    <button class="topbar-icon-btn" title="Help">?</button>
+    <div class="topbar-user">
+      <div>
+        <div class="user-name">Dr. Arjun Varma</div>
+        <div class="user-role">CHIEF ADMINISTRATOR</div>
+      </div>
+      <div class="user-avatar">AV</div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main-content">
+
+  <!-- ========== PAGE: MISSION CONTROL ========== -->
+  <section class="page active" id="page-mission-control">
+    <!-- Stat Cards -->
+    <div class="stat-cards-grid">
+      <div class="stat-card stat-blue">
+        <div class="stat-label">TOTAL UNITS AVAILABLE</div>
+        <div class="stat-value">14,208 <span class="stat-badge badge-green">▲12%</span></div>
+      </div>
+      <div class="stat-card stat-neutral">
+        <div class="stat-label">ACTIVE REQUESTS</div>
+        <div class="stat-value">342 <span class="stat-sub">Standard Processing</span></div>
+      </div>
+      <div class="stat-card stat-red">
+        <div class="stat-label">EMERGENCY REQUESTS</div>
+        <div class="stat-value">18 <span class="stat-sub-icon">📡</span></div>
+      </div>
+      <div class="stat-card stat-amber">
+        <div class="stat-label">UNITS NEAR EXPIRY</div>
+        <div class="stat-value">84 <span class="stat-badge badge-amber">&lt; 48 HOURS</span></div>
+      </div>
+    </div>
+
+    <!-- Map + Alerts Row -->
+    <div class="map-alerts-row">
+      <div class="map-card">
+        <div class="card-header">
+          <span class="card-title">LIVE DEPLOYMENT MAP – INDIA</span>
+          <div class="card-badges">
+            <span class="badge badge-blue">LIVE TELEMETRY</span>
+            <span class="badge badge-outline">24 REGIONS</span>
+          </div>
+        </div>
+        <div class="india-map-container">
+          <svg id="indiaMap" viewBox="0 0 500 560" class="india-map-svg">
+            <!-- India outline SVG path -->
+            <path class="india-path" d="M200,20 L230,18 L260,22 L280,35 L295,50 L310,65 L330,70 L350,60 L370,55 L385,45 L395,55 L400,70 L395,90 L380,105 L370,120 L365,140 L370,160 L380,175 L390,190 L395,210 L390,230 L380,245 L375,265 L380,285 L385,305 L380,325 L370,340 L360,358 L345,375 L330,390 L315,400 L305,415 L295,430 L285,445 L275,460 L265,475 L255,490 L245,505 L235,520 L230,535 L220,540 L215,530 L210,515 L205,500 L200,485 L195,470 L190,455 L195,440 L200,425 L205,410 L200,395 L190,380 L180,365 L170,350 L160,335 L155,318 L150,300 L145,282 L140,265 L135,248 L130,230 L135,212 L140,195 L135,178 L128,160 L125,142 L120,125 L115,108 L110,90 L108,72 L115,56 L125,42 L140,32 L158,25 L178,21 Z"/>
+            <!-- Kashmir region -->
+            <path class="india-path" d="M200,20 L190,15 L178,10 L165,8 L152,12 L142,20 L135,30 L140,32 Z"/>
+            <!-- Northeast region -->
+            <path class="india-path" d="M395,55 L410,50 L425,52 L435,60 L440,75 L430,85 L415,88 L400,82 L395,70 Z"/>
+            <!-- Sri Lanka hint -->
+            <ellipse cx="260" cy="552" rx="12" ry="8" class="srilanka-path"/>
+            <!-- Andaman Islands -->
+            <ellipse cx="430" cy="380" rx="8" ry="20" class="india-path" opacity="0.5"/>
+
+            <!-- Alert markers -->
+            <circle cx="250" cy="180" r="8" class="map-marker marker-critical pulse-ring"/>
+            <circle cx="250" cy="180" r="4" class="map-marker-dot"/>
+            <circle cx="210" cy="390" r="6" class="map-marker marker-normal"/>
+            <circle cx="210" cy="390" r="3" class="map-marker-dot-blue"/>
+            <circle cx="310" cy="460" r="5" class="map-marker marker-warning"/>
+            <circle cx="310" cy="460" r="2.5" class="map-marker-dot-amber"/>
+
+            <!-- Region labels -->
+            <text x="240" y="165" class="map-label">Delhi</text>
+            <text x="195" y="408" class="map-label">Mumbai</text>
+            <text x="298" y="473" class="map-label">Chennai</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="alerts-card">
+        <div class="card-header">
+          <span class="card-icon">⚡</span>
+          <span class="card-title">REAL-TIME ALERTS</span>
+        </div>
+        <div class="alerts-list">
+          <div class="alert-item alert-critical">
+            <div class="alert-header">
+              <span class="alert-type">CRITICAL SHORTAGE</span>
+              <span class="alert-time">2M AGO</span>
+            </div>
+            <div class="alert-body">O– Negative needed at Apollo Hospital, Bangalore. Request priority: Level 1.</div>
+          </div>
+          <div class="alert-item alert-dispatch">
+            <div class="alert-header">
+              <span class="alert-type">DISPATCH TRANSIT</span>
+              <span class="alert-time">12M AGO</span>
+            </div>
+            <div class="alert-body">Convoy BT-092 departed Mumbai Hub. ETA Pune Facility: 14:30 IST.</div>
+          </div>
+          <div class="alert-item alert-system">
+            <div class="alert-header">
+              <span class="alert-type">SYSTEM UPDATE</span>
+              <span class="alert-time">45M AGO</span>
+            </div>
+            <div class="alert-body">Cold chain IoT sensors online in Hyderabad Zone. Precision monitoring active.</div>
+          </div>
+          <div class="alert-item alert-weather">
+            <div class="alert-header">
+              <span class="alert-type">WEATHER ALERT</span>
+              <span class="alert-time">1H AGO</span>
+            </div>
+            <div class="alert-body">Heavy rain in Chennai area. Rerouting emergency logistics through Route B.</div>
+          </div>
+        </div>
+        <button class="view-logs-btn">VIEW HISTORICAL LOGS</button>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="card-header">
+          <span class="card-title">DEMAND VS SUPPLY INDEX</span>
+          <div class="chart-legend">
+            <span class="legend-dot dot-blue"></span><span>SUPPLY</span>
+            <span class="legend-dot dot-red"></span><span>DEMAND</span>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="demandSupplyChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="card-header">
+          <span class="card-title">INVENTORY DISTRIBUTION BY TYPE</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="inventoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PAGE: BLOOD INVENTORY ========== -->
+  <section class="page" id="page-blood-inventory">
+    <div class="page-heading-row">
+      <div>
+        <h1 class="page-title">Blood Inventory</h1>
+        <p class="page-subtitle">Real-time telemetry of available blood units across the regional network. Precision tracking for life-critical logistics.</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline">⇄ Transfer</button>
+        <button class="btn btn-danger">🗑 Discard</button>
+        <button class="btn btn-primary">+ Add Unit</button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label class="filter-label">HOSPITAL / BANK</label>
+        <select class="filter-select" id="hospitalFilter">
+          <option>All Locations</option>
+          <option>AIIMS, New Delhi</option>
+          <option>Apollo Regional</option>
+          <option>Fortis Memorial</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">BLOOD TYPE</label>
+        <div class="blood-type-toggles">
+          <button class="blood-type-btn active" data-type="O-">O-</button>
+          <button class="blood-type-btn" data-type="A+">A+</button>
+          <button class="blood-type-btn" data-type="B+">B+</button>
+          <button class="blood-type-btn" data-type="AB-">AB-</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">STATUS LEVEL</label>
+        <select class="filter-select" id="statusFilter">
+          <option>All Statuses</option>
+          <option>Critical</option>
+          <option>Low Stock</option>
+          <option>Stable</option>
+        </select>
+      </div>
+      <button class="clear-filters-btn" onclick="clearFilters()">CLEAR ALL FILTERS</button>
+    </div>
+
+    <!-- Inventory Table -->
+    <div class="inventory-card">
+      <table class="inventory-table">
+        <thead>
+          <tr>
+            <th>BLOOD TYPE</th>
+            <th>QUANTITY</th>
+            <th>EXPIRY STATUS</th>
+            <th>FACILITY LOCATION</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryTableBody">
+          <tr class="inv-row">
+            <td>
+              <div class="blood-type-cell">
+                <span class="blood-badge badge-oneg">O-</span>
+                <div>
+                  <div class="blood-name">Universal Donor</div>
+                  <div class="blood-id">ID: BT-00129-X</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="qty-value">14</span> <span class="qty-unit">Units</span></td>
+            <td>
+              <div class="expiry-cell">
+                <span class="expiry-status status-critical">CRITICAL</span>
+                <span class="expiry-time">48 Hours Left</span>
+                <div class="expiry-bar"><div class="expiry-fill fill-critical" style="width:15%"></div></div>
+              </div>
+            </td>
+            <td><span class="location-pin">📍</span> AIIMS, New Delhi</td>
+            <td><button class="action-dots">⋮</button></td>
+          </tr>
+          <tr class="inv-row">
+            <td>
+              <div class="blood-type-cell">
+                <span class="blood-badge badge-apos">A+</span>
+                <div>
+                  <div class="blood-name">Type A Positive</div>
+                  <div class="blood-id">ID: BT-00142-Y</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="qty-value">42</span> <span class="qty-unit">Units</span></td>
+            <td>
+              <div class="expiry-cell">
+                <span class="expiry-status status-stable">STABLE</span>
+                <span class="expiry-time">14 Days Left</span>
+                <div class="expiry-bar"><div class="expiry-fill fill-stable" style="width:70%"></div></div>
+              </div>
+            </td>
+            <td><span class="location-pin">📍</span> Apollo Regional</td>
+            <td><button class="action-dots">⋮</button></td>
+          </tr>
+          <tr class="inv-row">
+            <td>
+              <div class="blood-type-cell">
+                <span class="blood-badge badge-bneg">B-</span>
+                <div>
+                  <div class="blood-name">Type B Negative</div>
+                  <div class="blood-id">ID: BT-00155-Z</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="qty-value">08</span> <span class="qty-unit">Units</span></td>
+            <td>
+              <div class="expiry-cell">
+                <span class="expiry-status status-lowstock">LOW STOCK</span>
+                <span class="expiry-time">5 Days Left</span>
+                <div class="expiry-bar"><div class="expiry-fill fill-lowstock" style="width:30%"></div></div>
+              </div>
+            </td>
+            <td><span class="location-pin">📍</span> Fortis Memorial</td>
+            <td><button class="action-dots">⋮</button></td>
+          </tr>
+          <tr class="inv-row">
+            <td>
+              <div class="blood-type-cell">
+                <span class="blood-badge badge-abpos">AB+</span>
+                <div>
+                  <div class="blood-name">Universal Recipient</div>
+                  <div class="blood-id">ID: BT-00168-W</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="qty-value">27</span> <span class="qty-unit">Units</span></td>
+            <td>
+              <div class="expiry-cell">
+                <span class="expiry-status status-stable">STABLE</span>
+                <span class="expiry-time">22 Days Left</span>
+                <div class="expiry-bar"><div class="expiry-fill fill-stable" style="width:85%"></div></div>
+              </div>
+            </td>
+            <td><span class="location-pin">📍</span> Apollo Regional</td>
+            <td><button class="action-dots">⋮</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="table-footer">
+        <span class="table-count">Showing <strong>1 – 4</strong> of <strong>128</strong> entries</span>
+        <div class="pagination">
+          <button class="page-btn">‹</button>
+          <button class="page-btn active-page">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Cards -->
+    <div class="inv-bottom-row">
+      <div class="volatility-card">
+        <div class="volatility-ring">
+          <svg viewBox="0 0 80 80" class="ring-svg">
+            <circle cx="40" cy="40" r="34" class="ring-bg"/>
+            <circle cx="40" cy="40" r="34" class="ring-progress" stroke-dasharray="35 178"/>
+          </svg>
+          <div class="ring-value">12%</div>
+        </div>
+        <div class="volatility-info">
+          <div class="vol-title">Stock Volatility Alert</div>
+          <div class="vol-desc">Regional demand for O– Negative has increased by 12% in the last 6 hours. Current inventory levels at AIIMS are reaching critical safety thresholds.</div>
+        </div>
+      </div>
+      <div class="shipments-card">
+        <div class="ship-header">
+          <span class="ship-icon">📦</span>
+          <span class="ship-label">ACTIVE SHIPMENTS</span>
+        </div>
+        <div class="ship-value">08 <span class="ship-sub">In Transit</span></div>
+        <div class="ship-details">
+          <div class="ship-item"><span>🚚 BT-092</span><span class="ship-eta">ETA 14:30</span></div>
+          <div class="ship-item"><span>🚚 BT-104</span><span class="ship-eta crit">CRITICAL</span></div>
+          <div class="ship-item"><span>🚚 BT-117</span><span class="ship-eta">ETA 16:45</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PAGE: LOGISTICS TRACK ========== -->
+  <section class="page" id="page-logistics-track">
+    <div class="page-heading-row">
+      <div>
+        <h1 class="page-title">Logistics Track</h1>
+        <p class="page-subtitle">Real-time tracking of all blood shipments and transit vehicles across the network.</p>
+      </div>
+    </div>
+    <div class="logistics-grid">
+      <div class="logistics-card-item">
+        <div class="logi-header"><span class="logi-icon">🚚</span> Convoy BT-092</div>
+        <div class="logi-status status-transit">IN TRANSIT</div>
+        <div class="logi-detail"><span>Origin:</span> Mumbai Hub</div>
+        <div class="logi-detail"><span>Destination:</span> Pune Facility</div>
+        <div class="logi-detail"><span>ETA:</span> 14:30 IST</div>
+        <div class="logi-bar"><div class="logi-fill" style="width:65%"></div></div>
+        <div class="logi-pct">65% Complete</div>
+      </div>
+      <div class="logistics-card-item">
+        <div class="logi-header"><span class="logi-icon">🚑</span> Emergency BT-104</div>
+        <div class="logi-status status-critical-transit">CRITICAL</div>
+        <div class="logi-detail"><span>Origin:</span> Delhi Blood Bank</div>
+        <div class="logi-detail"><span>Destination:</span> AIIMS ICU Unit</div>
+        <div class="logi-detail"><span>ETA:</span> 22 km remaining</div>
+        <div class="logi-bar"><div class="logi-fill fill-crit" style="width:82%"></div></div>
+        <div class="logi-pct">82% Complete</div>
+      </div>
+      <div class="logistics-card-item">
+        <div class="logi-header"><span class="logi-icon">🚚</span> Convoy BT-117</div>
+        <div class="logi-status status-transit">IN TRANSIT</div>
+        <div class="logi-detail"><span>Origin:</span> Chennai Hub</div>
+        <div class="logi-detail"><span>Destination:</span> Hyderabad Medical</div>
+        <div class="logi-detail"><span>ETA:</span> 16:45 IST</div>
+        <div class="logi-bar"><div class="logi-fill" style="width:40%"></div></div>
+        <div class="logi-pct">40% Complete</div>
+      </div>
+      <div class="logistics-card-item">
+        <div class="logi-header"><span class="logi-icon">🚚</span> Convoy BT-128</div>
+        <div class="logi-status status-preparing">PREPARING</div>
+        <div class="logi-detail"><span>Origin:</span> Bangalore Depot</div>
+        <div class="logi-detail"><span>Destination:</span> Mysore Hospital</div>
+        <div class="logi-detail"><span>ETA:</span> Depart at 18:00</div>
+        <div class="logi-bar"><div class="logi-fill" style="width:5%"></div></div>
+        <div class="logi-pct">Loading 5%</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PAGE: HOSPITAL NETWORK ========== -->
+  <section class="page" id="page-hospital-network">
+    <div class="page-heading-row">
+      <div>
+        <h1 class="page-title">Hospital Network</h1>
+        <p class="page-subtitle">Real-time status and telemetry for 48 integrated facilities</p>
+      </div>
+      <div class="page-actions">
+        <div class="filter-inline">
+          <span class="filter-label-sm">REGION:</span>
+          <select class="filter-select-sm"><option>All India</option><option>North</option><option>South</option><option>East</option><option>West</option></select>
+        </div>
+        <div class="filter-inline">
+          <span class="filter-label-sm">STATUS:</span>
+          <select class="filter-select-sm"><option>All Status</option><option>Critical</option><option>Warning</option><option>Normal</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="hospital-cards-grid">
+      <!-- AIIMS New Delhi - CRITICAL -->
+      <div class="hospital-card hosp-critical">
+        <div class="hosp-card-header">
+          <div>
+            <div class="hosp-name">AIIMS New Delhi</div>
+            <div class="hosp-location">📍 Ansari Nagar, New Delhi</div>
+          </div>
+          <span class="hosp-status-badge badge-critical">● CRITICAL</span>
+        </div>
+        <div class="hosp-map-thumb map-delhi"></div>
+        <div class="hosp-stock-row">
+          <span class="stock-label">PLASMA &amp; WHOLE BLOOD STOCK</span>
+          <span class="stock-pct critical-pct">12% Remaining</span>
+        </div>
+        <div class="stock-bar"><div class="stock-fill sfill-critical" style="width:12%"></div></div>
+        <div class="hosp-stats-row">
+          <div class="hosp-stat"><div class="hstat-label">ACTIVE REQUESTS</div><div class="hstat-value">14</div></div>
+          <div class="hosp-stat"><div class="hstat-label">IN-TRANSIT</div><div class="hstat-value">03</div></div>
+        </div>
+      </div>
+
+      <!-- Apollo Hospitals - NORMAL -->
+      <div class="hospital-card hosp-normal">
+        <div class="hosp-card-header">
+          <div>
+            <div class="hosp-name">Apollo Hospitals</div>
+            <div class="hosp-location">📍 Bannerghatta, Bengaluru</div>
+          </div>
+          <span class="hosp-status-badge badge-normal">● NORMAL</span>
+        </div>
+        <div class="hosp-map-thumb map-bengaluru"></div>
+        <div class="hosp-stock-row">
+          <span class="stock-label">PLASMA &amp; WHOLE BLOOD STOCK</span>
+          <span class="stock-pct normal-pct">88% Remaining</span>
+        </div>
+        <div class="stock-bar"><div class="stock-fill sfill-normal" style="width:88%"></div></div>
+        <div class="hosp-stats-row">
+          <div class="hosp-stat"><div class="hstat-label">ACTIVE REQUESTS</div><div class="hstat-value">02</div></div>
+          <div class="hosp-stat"><div class="hstat-label">IN-TRANSIT</div><div class="hstat-value">08</div></div>
+        </div>
+      </div>
+
+      <!-- Fortis Memorial - NORMAL -->
+      <div class="hospital-card hosp-normal">
+        <div class="hosp-card-header">
+          <div>
+            <div class="hosp-name">Fortis Memorial</div>
+            <div class="hosp-location">📍 Gurugram, Haryana</div>
+          </div>
+          <span class="hosp-status-badge badge-normal">● NORMAL</span>
+        </div>
+        <div class="hosp-map-thumb map-gurugram"></div>
+        <div class="hosp-stock-row">
+          <span class="stock-label">PLASMA &amp; WHOLE BLOOD STOCK</span>
+          <span class="stock-pct normal-pct">64% Remaining</span>
+        </div>
+        <div class="stock-bar"><div class="stock-fill sfill-normal" style="width:64%"></div></div>
+        <div class="hosp-stats-row">
+          <div class="hosp-stat"><div class="hstat-label">ACTIVE REQUESTS</div><div class="hstat-value">05</div></div>
+          <div class="hosp-stat"><div class="hstat-label">IN-TRANSIT</div><div class="hstat-value">12</div></div>
+        </div>
+      </div>
+
+      <!-- TATA Memorial - WARNING -->
+      <div class="hospital-card hosp-warning">
+        <div class="hosp-card-header">
+          <div>
+            <div class="hosp-name">TATA Memorial</div>
+            <div class="hosp-location">📍 Parel, Mumbai</div>
+          </div>
+          <span class="hosp-status-badge badge-warning">● WARNING</span>
+        </div>
+        <div class="hosp-map-thumb map-mumbai"></div>
+        <div class="hosp-stock-row">
+          <span class="stock-label">PLASMA &amp; WHOLE BLOOD STOCK</span>
+          <span class="stock-pct warning-pct">35% Remaining</span>
+        </div>
+        <div class="stock-bar"><div class="stock-fill sfill-warning" style="width:35%"></div></div>
+        <div class="hosp-stats-row">
+          <div class="hosp-stat"><div class="hstat-label">ACTIVE REQUESTS</div><div class="hstat-value">21</div></div>
+          <div class="hosp-stat"><div class="hstat-label">IN-TRANSIT</div><div class="hstat-value">06</div></div>
+        </div>
+      </div>
+
+      <!-- Intra-Network Optimization Panel -->
+      <div class="hospital-card optimization-card">
+        <div class="hosp-card-header">
+          <div>
+            <div class="hosp-name">Intra-Network Optimization</div>
+            <div class="hosp-location">Suggested redistribution based on current demand volatility</div>
+          </div>
+          <button class="run-analysis-btn">RUN ANALYSIS</button>
+        </div>
+        <div class="optimization-visual">
+          <div class="opt-grid">
+            <div class="opt-node critical-node">●</div>
+            <div class="opt-node surplus-node">●</div>
+            <div class="opt-node surplus-node">●</div>
+            <div class="opt-node critical-node">●</div>
+            <div class="opt-node">●</div>
+            <div class="opt-node surplus-node">●</div>
+          </div>
+        </div>
+        <div class="opt-metrics">
+          <div class="opt-metric">
+            <div class="opt-metric-label">SHORTFALL WARNING</div>
+            <div class="opt-metric-value warning-val">42 Units O–</div>
+            <div class="opt-metric-sub">Expected within 4 hours</div>
+          </div>
+          <div class="opt-metric">
+            <div class="opt-metric-label">SURPLUS AVAILABLE</div>
+            <div class="opt-metric-value success-val">108 Units A+</div>
+            <div class="opt-metric-sub">St. John's Medical Hub</div>
+          </div>
+          <div class="opt-metric">
+            <div class="opt-metric-label">ROUTE EFFICIENCY</div>
+            <div class="opt-metric-value">94.2%</div>
+            <div class="opt-metric-sub">Optimal traffic conditions</div>
+          </div>
+        </div>
+        <div class="opt-legend">
+          <span class="legend-circle crit-circle"></span> CRITICAL NODE
+          <span class="legend-circle surp-circle"></span> SURPLUS NODE
+        </div>
+      </div>
+    </div>
+
+    <!-- Network Footer Stats -->
+    <div class="network-footer">
+      <div class="net-stat">
+        <div class="net-stat-label">TOTAL NETWORK UNITS</div>
+        <div class="net-stat-value">2,841 <span class="net-unit">units</span></div>
+      </div>
+      <div class="net-stat">
+        <div class="net-stat-label">LIVE TRANSITS</div>
+        <div class="net-stat-value">38 <span class="net-unit">vehicles</span></div>
+      </div>
+      <div class="net-stat">
+        <div class="net-stat-label">AVERAGE RESPONSE</div>
+        <div class="net-stat-value">14:02 <span class="net-unit">mins</span></div>
+      </div>
+      <div class="net-system-status">
+        <span class="system-live-dot"></span> SYSTEM ENCRYPTED &amp; LIVE
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PAGE: COLD CHAIN IoT ========== -->
+  <section class="page" id="page-cold-chain-iot">
+    <!-- Top stat cards -->
+    <div class="iot-stat-cards">
+      <div class="iot-stat-card iot-blue">
+        <div class="iot-stat-badge"><span class="iot-icon">📡</span></div>
+        <div class="iot-stat-label">ACTIVE SENSORS</div>
+        <div class="iot-stat-value">1,248</div>
+        <div class="iot-stat-sub"><span class="green-dot">●</span> 99.8% Operational Uptime</div>
+      </div>
+      <div class="iot-stat-card iot-cyan">
+        <div class="iot-stat-badge"><span class="iot-icon">❄</span></div>
+        <div class="iot-stat-label">STABLE UNITS</div>
+        <div class="iot-stat-value">852</div>
+        <div class="iot-stat-sub">Nominal Range: 2°C – 6°C</div>
+      </div>
+      <div class="iot-stat-card iot-red">
+        <div class="iot-stat-badge"><span class="iot-icon iot-warn-icon">⚠</span></div>
+        <div class="iot-stat-label">CRITICAL ALERTS</div>
+        <div class="iot-stat-value critical-iot">03</div>
+        <div class="iot-stat-sub"><span class="red-dot">●</span> Action Required: Transit Hub 4</div>
+      </div>
+    </div>
+
+    <!-- Chart + IoT Node Health Row -->
+    <div class="iot-main-row">
+      <div class="thermal-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Thermal Stability Index</div>
+            <div class="card-sub">Real-time aggregate across all storage sectors</div>
+          </div>
+          <div class="card-badges">
+            <span class="badge badge-blue">LIVE FEED</span>
+            <span class="badge badge-outline">HOSPITAL_NETWORK_A</span>
+          </div>
+        </div>
+        <div class="chart-container chart-tall">
+          <canvas id="thermalChart"></canvas>
+        </div>
+      </div>
+      <div class="iot-node-card">
+        <div class="card-title">IoT Node Health</div>
+        <div class="node-sub">LIVE DEVICE REGISTRY</div>
+        <div class="node-list">
+          <div class="node-item">
+            <span class="node-indicator indicator-green"></span>
+            <div class="node-details">
+              <span class="node-name">Sensor-N12</span>
+              <span class="node-loc">MAIN REFRIGERATOR A</span>
+            </div>
+            <span class="node-temp">3.4°C</span>
+            <div class="node-icons">🔋📶</div>
+          </div>
+          <div class="node-item">
+            <span class="node-indicator indicator-red"></span>
+            <div class="node-details">
+              <span class="node-name">Sensor-T88</span>
+              <span class="node-loc">CRYO-VAULT 04</span>
+            </div>
+            <span class="node-temp critical-temp">0.1°C</span>
+            <div class="node-icons">🔋📶</div>
+          </div>
+          <div class="node-item">
+            <span class="node-indicator indicator-green"></span>
+            <div class="node-details">
+              <span class="node-name">Sensor-P41</span>
+              <span class="node-loc">PLASMA UNIT RACK</span>
+            </div>
+            <span class="node-temp">4.0°C</span>
+            <div class="node-icons">🔋📶</div>
+          </div>
+          <div class="node-item node-offline">
+            <span class="node-indicator indicator-gray"></span>
+            <div class="node-details">
+              <span class="node-name">OFFLINE-X09</span>
+              <span class="node-loc">BACKUP UNIT 2</span>
+            </div>
+            <span class="node-temp gray-temp">N/A</span>
+            <div class="node-icons gray-icons">🔋📶</div>
+          </div>
+        </div>
+        <button class="diagnostics-btn">DIAGNOSTICS REPORT</button>
+
+        <!-- Live Radar -->
+        <div class="live-radar">
+          <div class="radar-header">
+            <span class="radar-label">LIVE RADAR</span>
+            <span class="radar-scan-badge"><span class="scan-dot"></span> SCANNING</span>
+          </div>
+          <div class="radar-display">
+            <div class="radar-circle radar-c1"></div>
+            <div class="radar-circle radar-c2"></div>
+            <div class="radar-circle radar-c3"></div>
+            <div class="radar-sweep"></div>
+            <div class="radar-center-dot"></div>
+          </div>
+          <div class="radar-footer">LOCATING LOGISTICS 04-B</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transit Containers Row -->
+    <div class="transit-row">
+      <div class="transit-card transit-nominal">
+        <div class="transit-header">
+          <span class="transit-icon">🚚</span>
+          <span class="transit-name">Transit Container #BT-992</span>
+        </div>
+        <div class="transit-temp">4.2°C</div>
+        <div class="transit-status"><span class="status-dot-green"></span> NOMINAL</div>
+        <div class="transit-detail">BATTERY <div class="transit-bar"><div class="transit-fill tfill-green" style="width:88%"></div></div> <span>88%</span></div>
+      </div>
+      <div class="transit-card transit-critical-card">
+        <div class="transit-header">
+          <span class="transit-icon">🚑</span>
+          <span class="transit-name">Transit Container #BT-104</span>
+        </div>
+        <div class="transit-temp critical-iot">7.8°C</div>
+        <div class="transit-status"><span class="status-dot-red"></span> CRITICAL SPIKE</div>
+        <div class="transit-detail">ROUTE PROGRESS <div class="transit-bar"><div class="transit-fill tfill-red" style="width:75%"></div></div> <span>22 km to Dest.</span></div>
+      </div>
+    </div>
+
+    <!-- Bottom status bar -->
+    <div class="iot-status-bar">
+      <span><span class="live-dot"></span> BLOCKCHAIN LEDGER VERIFIED</span>
+      <span><span class="live-dot"></span> IoT MESH NETWORK ACTIVE</span>
+      <span class="status-bar-right">LATENCY: 42MS &nbsp;|&nbsp; LAST SYNC: 0.4S AGO &nbsp;|&nbsp; V4.8.0-ULTRA</span>
+    </div>
+  </section>
+
+</main>
+
+<!-- Emergency Dispatch Modal -->
+<div class="modal-overlay" id="emergencyModal" onclick="closeEmergency(event)">
+  <div class="modal-box">
+    <div class="modal-title">🚨 Emergency Dispatch Protocol</div>
+    <div class="modal-body">
+      <p>Initiating priority emergency dispatch. All available logistics vehicles will be rerouted to critical zones.</p>
+      <div class="modal-units">
+        <div>O– Units Available: <strong>14</strong></div>
+        <div>Vehicles on standby: <strong>3</strong></div>
+        <div>Estimated mobilization: <strong>4 mins</strong></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="confirmDispatch()">CONFIRM DISPATCH</button>
+      <button class="btn btn-outline" onclick="closeEmergency()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

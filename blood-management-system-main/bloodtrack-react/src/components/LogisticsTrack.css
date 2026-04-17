@@ -1,0 +1,19 @@
+.logi-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+.logi-card { transition:transform .2s; }
+.logi-card:hover { transform:translateY(-2px); }
+.logi-hdr { font-size:14px; font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.logi-icon { font-size:18px; }
+.logi-status { display:inline-block; font-size:9px; font-weight:800; letter-spacing:1px; padding:3px 8px; border-radius:4px; margin-bottom:12px; }
+.st-transit { background:var(--blue-glow); color:var(--blue); }
+.st-crit { background:var(--red-glow); color:var(--red); }
+.st-prep { background:var(--amber-glow); color:var(--amber); }
+
+.logi-det { font-size:12px; color:var(--text-secondary); margin-bottom:4px; }
+.logi-det span { color:var(--text-muted); font-size:10px; font-weight:600; display:inline-block; width:80px; }
+
+.logi-bar { height:5px; background:rgba(255,255,255,.08); border-radius:3px; margin:12px 0 4px; overflow:hidden; }
+.logi-fill { height:100%; border-radius:3px; }
+.fill-transit, .fill-prep { background:linear-gradient(90deg,var(--blue),var(--cyan)); }
+.fill-crit { background:linear-gradient(90deg,var(--red),var(--amber)); }
+
+.logi-pct { font-size:10px; color:var(--text-muted); text-align:right; }
